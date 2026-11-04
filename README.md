@@ -79,11 +79,20 @@ Duru is deliberately small. If you need plugins, sync or a WYSIWYG writing exper
 > [!NOTE]
 > Duru is **not code-signed yet**, so Windows SmartScreen may show a blue "Windows protected your PC" screen. Click **More info → Run anyway**. Release builds are made by [GitHub Actions](.github/workflows/build.yml) from this repository, and each release includes `SHA256SUMS.txt` so you can check the file.
 
-**winget:** coming soon.
+**Portable:** prefer no installer? Download [`Duru.exe`](https://github.com/git-Harrison/Duru/releases/latest/download/Duru.exe) and run it from anywhere.
+
+**Scoop:**
+
+```powershell
+scoop bucket add git-harrison https://github.com/git-Harrison/scoop-bucket
+scoop install git-harrison/duru
+```
+
+**winget:** coming soon (submission under review).
 
 **Requirements:** Windows 10 or 11 with Microsoft Edge (installed by default).
 
-To uninstall, go to **Settings → Apps → Installed apps → Duru**.
+To uninstall, go to **Settings → Apps → Installed apps → Duru**. For scripts: `Duru.exe --uninstall /S`.
 
 ## Shortcuts
 
