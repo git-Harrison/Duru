@@ -55,6 +55,17 @@ Output goes to `out\`: `Duru.exe`, `Duru-Setup.exe`, `Duru-Setup.zip` and `SHA25
 
 Duru works entirely on your computer. It does not send your files or any usage data anywhere. It runs a small local server on `localhost` that only Duru's own window can use.
 
+## Code signing policy
+
+Release builds are made by [GitHub Actions](.github/workflows/build.yml) from the source in this repository. No binaries are built or uploaded by hand once signing is in place.
+
+We are applying for free code signing from [SignPath.io](https://about.signpath.io), with a certificate by the [SignPath Foundation](https://signpath.org). Until it is approved, the installer is unsigned.
+
+- Committers and reviewers: [git-Harrison](https://github.com/git-Harrison)
+- Approvers: [git-Harrison](https://github.com/git-Harrison)
+
+Every signing request is approved by hand.
+
 ## Third-party components
 
 - [marked](https://github.com/markedjs/marked) (MIT)
