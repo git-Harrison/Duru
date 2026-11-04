@@ -14,9 +14,9 @@ Under 3 MB. Opens in a blink. No admin rights. No Electron.
 
 <br>
 
-<a href="https://github.com/git-Harrison/Duru/releases/latest/download/Duru-Setup.exe"><img src="https://img.shields.io/badge/%E2%AC%87%20Download%20for%20Windows-Duru--Setup.exe-2563eb?style=for-the-badge" alt="Download for Windows" height="44"></a>
+<a href="https://github.com/git-Harrison/Duru/releases/latest/download/Duru-Setup.exe"><img src="https://img.shields.io/badge/%E2%AC%87%20%20Download%20for%20Windows-2563eb?style=for-the-badge" alt="Download for Windows" height="52"></a>
 
-<sub>Free and open source · Windows 10 / 11 · English, 한국어, 日本語, 简体中文, Español</sub>
+<sub>Duru-Setup.exe · Free and open source · Windows 10 / 11 · English, 한국어, 日本語, 简体中文, Español</sub>
 
 <br><br>
 
