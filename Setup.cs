@@ -9,7 +9,8 @@ static class Setup
 {
     public const string AppName = "Duru";
     public const string ExeName = "Duru.exe";
-    public const string Version = "2.2.1";
+    public const string Version = "2.2.2";
+    public const string AppId = "GitHarrison.Duru";
     const string ProgId = "Duru.doc";
     const string RegKey = @"Software\Duru";
     const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Duru";
@@ -124,6 +125,7 @@ static class Setup
         s.IconLocation = IconOf(exe) + ",0";
         s.Description = L.Tagline;
         s.Save();
+        TaskbarId.ApplyToShortcut(lnk, AppId);   // 작업 표시줄이 이 바로가기 아이콘을 쓰게
     }
 
     // Windows 아이콘 캐시 새로 고침 (Windows 10/11)

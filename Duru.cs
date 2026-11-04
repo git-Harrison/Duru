@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -112,7 +112,7 @@ static class Duru
         try { string old = Path.Combine(AppDir, "app"); if (Directory.Exists(old)) Directory.Delete(old, true); } catch { }
         Token = Guid.NewGuid().ToString("N");
         var asm = Assembly.GetExecutingAssembly();
-        foreach (var name in new[] { "viewer.html", "marked.min.js", "PretendardVariable.woff2", "icon.png", "notices.txt" })
+        foreach (var name in new[] { "viewer.html", "marked.min.js", "PretendardVariable.woff2", "icon.png", "app.ico", "notices.txt" })
             using (var s = asm.GetManifestResourceStream(name))
             using (var m = new MemoryStream()) { s.CopyTo(m); Static[name] = m.ToArray(); }
         Static["viewer.html"] = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(Static["viewer.html"]).Replace("__TOKEN__", Token).Replace("__VERSION__", Setup.Version).Replace("__LANG__", L.Code).Replace("__ANSI__", AnsiName()));
@@ -140,11 +140,13 @@ static class Duru
 
         Launch(Port);
         // 뷰어 창이 사라지면 종료
-        var start = DateTime.Now; int miss = 0;
+        var start = DateTime.Now; int miss = 0; IntPtr tagged = IntPtr.Zero;
+        for (int i = 0; i < 40 && tagged == IntPtr.Zero; i++) { Thread.Sleep(150); IntPtr h0 = FindViewer(); if (h0 != IntPtr.Zero) { TagWindow(h0); tagged = h0; } }
         while (true)
         {
             Thread.Sleep(1500);
-            if (FindViewer() != IntPtr.Zero) miss = 0;
+            IntPtr vw = FindViewer();
+            if (vw != IntPtr.Zero) { miss = 0; if (vw != tagged) { TagWindow(vw); tagged = vw; } }
             else if ((DateTime.Now - start).TotalSeconds > 20 && ++miss >= 3) break;
         }
         try { File.Delete(PortFile); File.Delete(TokenFile); } catch { }
@@ -156,6 +158,14 @@ static class Duru
     {
         try { return Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage).WebName; }
         catch { return "windows-1252"; }
+    }
+
+    // Edge 창을 작업 표시줄에서 Duru 로 보이게 (선명한 Duru.ico 사용)
+    static void TagWindow(IntPtr h)
+    {
+        string exe = File.Exists(Setup.InstalledExe) ? Setup.InstalledExe : Assembly.GetExecutingAssembly().Location;
+        string icon = (File.Exists(Setup.IconFile) ? Setup.IconFile : exe) + ",0";
+        TaskbarId.ApplyToWindow(h, Setup.AppId, exe, icon, "Duru");
     }
 
     static void Enqueue(string p) { var e = Entry(p); lock (Inbox) Inbox.Add(e); }
@@ -197,7 +207,7 @@ static class Duru
                 byte[] data;
                 if (!Static.TryGetValue(name, out data)) { res.StatusCode = 404; return; }
                 res.ContentType = name.EndsWith(".html") ? "text/html; charset=utf-8" : name.EndsWith(".js") ? "text/javascript; charset=utf-8"
-                                : name.EndsWith(".png") ? "image/png" : name.EndsWith(".txt") ? "text/plain; charset=utf-8" : "font/woff2";
+                                : name.EndsWith(".png") ? "image/png" : name.EndsWith(".ico") ? "image/x-icon" : name.EndsWith(".txt") ? "text/plain; charset=utf-8" : "font/woff2";
                 res.Headers["Cache-Control"] = "no-store";
                 res.OutputStream.Write(data, 0, data.Length);
                 return;

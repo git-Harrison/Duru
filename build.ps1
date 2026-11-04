@@ -10,13 +10,13 @@ $res = { param($file, $name) "/resource:$file,$name" }
 $appArgs = @('/nologo', '/target:winexe', '/codepage:65001', "/out:$app", "/win32icon:$d\app.ico",
   (& $res "$d\viewer.html" 'viewer.html'), (& $res "$d\marked.min.js" 'marked.min.js'),
   (& $res "$d\PretendardVariable.woff2" 'PretendardVariable.woff2'), (& $res "$d\icon.png" 'icon.png'),
-  (& $res "$d\THIRD_PARTY_NOTICES.txt" 'notices.txt')) + $refs + @('/r:System.Web.Extensions.dll', "$d\Duru.cs", "$d\Setup.cs", "$d\Lang.cs")
+  (& $res "$d\THIRD_PARTY_NOTICES.txt" 'notices.txt'), (& $res "$d\app.ico" 'app.ico')) + $refs + @('/r:System.Web.Extensions.dll', "$d\Duru.cs", "$d\Setup.cs", "$d\Lang.cs", "$d\TaskbarId.cs")
 & $csc @appArgs
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 $setup = Join-Path $out 'Duru-Setup.exe'
 $setupArgs = @('/nologo', '/target:winexe', '/codepage:65001', "/out:$setup", "/win32icon:$d\app.ico",
-  (& $res $app 'Duru.exe'), (& $res "$d\icon.png" 'icon.png'), (& $res "$d\app.ico" 'app.ico')) + $refs + @("$d\Installer.cs", "$d\Setup.cs", "$d\Lang.cs", "$d\ModernSetup.cs")
+  (& $res $app 'Duru.exe'), (& $res "$d\icon.png" 'icon.png'), (& $res "$d\app.ico" 'app.ico')) + $refs + @("$d\Installer.cs", "$d\Setup.cs", "$d\Lang.cs", "$d\ModernSetup.cs", "$d\TaskbarId.cs")
 & $csc @setupArgs
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
