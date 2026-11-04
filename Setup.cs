@@ -9,7 +9,7 @@ static class Setup
 {
     public const string AppName = "Duru";
     public const string ExeName = "Duru.exe";
-    public const string Version = "2.1.0";
+    public const string Version = "2.2.0";
     const string ProgId = "Duru.doc";
     const string RegKey = @"Software\Duru";
     const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Duru";

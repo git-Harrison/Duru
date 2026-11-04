@@ -16,7 +16,7 @@ if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 $setup = Join-Path $out 'Duru-Setup.exe'
 $setupArgs = @('/nologo', '/target:winexe', '/codepage:65001', "/out:$setup", "/win32icon:$d\app.ico",
-  (& $res $app 'Duru.exe'), (& $res "$d\icon.png" 'icon.png')) + $refs + @("$d\Installer.cs", "$d\Setup.cs", "$d\Lang.cs")
+  (& $res $app 'Duru.exe'), (& $res "$d\icon.png" 'icon.png')) + $refs + @("$d\Installer.cs", "$d\Setup.cs", "$d\Lang.cs", "$d\ModernSetup.cs")
 & $csc @setupArgs
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
