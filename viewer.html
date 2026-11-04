@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duru</title>
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+@font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:block;src:url("PretendardVariable.woff2") format("woff2-variations")}
+:root{
+  --bg:#ffffff;--surface:#f7f7f8;--surface-2:#efeff1;--fg:#1f2329;--fg-2:#4b5260;--muted:#8a909b;
+  --border:#e6e7ea;--accent:#2f6fed;--accent-soft:#e9f0fe;--code-fg:#c4314b;--code-bg:#f3f4f6;--pre-bg:#f7f8fa;--warn:#e8890c;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.08);
+  --j-key:#0b5cad;--j-str:#1a7f37;--j-num:#b35900;--j-bool:#8250df;
+  --fs:17px;--measure:1000px;
+  --sans:"Pretendard Variable",Pretendard,"Segoe UI","Malgun Gothic",sans-serif;
+  --mono:"Cascadia Mono","Cascadia Code",Consolas,"Pretendard Variable",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17191d;--surface:#1e2025;--surface-2:#272a30;--fg:#e4e6ea;--fg-2:#b7bcc5;--muted:#7f8590;
+  --border:#2c2f36;--accent:#6ea1ff;--accent-soft:#1f2b42;--code-fg:#ff8fa3;--code-bg:#262930;--pre-bg:#1f2227;--warn:#f0a43a;
+  --j-key:#7cb7ff;--j-str:#7ee2a8;--j-num:#ffb86b;--j-bool:#c79bff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);}}
+:root[data-theme="dark"]{
+  --bg:#17191d;--surface:#1e2025;--surface-2:#272a30;--fg:#e4e6ea;--fg-2:#b7bcc5;--muted:#7f8590;
+  --border:#2c2f36;--accent:#6ea1ff;--accent-soft:#1f2b42;--code-fg:#ff8fa3;--code-bg:#262930;--pre-bg:#1f2227;--warn:#f0a43a;
+  --j-key:#7cb7ff;--j-str:#7ee2a8;--j-num:#ffb86b;--j-bool:#c79bff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);display:flex;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+svg{width:18px;height:18px;flex:none}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--surface-2);border-radius:8px;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--muted)}
+
+/* ── 사이드바 ── */
+#side{width:288px;flex:none;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+body.side-off #side{display:none}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 20px 10px}
+.logo{width:30px;height:30px;display:block}
+#about{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+#about.show{display:flex}
+#about .box{background:var(--bg);color:var(--fg);border-radius:16px;box-shadow:var(--shadow);width:min(640px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+#about .hd{display:flex;align-items:center;gap:14px;padding:22px 24px 14px}
+#about .hd img{width:48px;height:48px}
+#about .hd b{font-size:19px;display:block}
+#about .hd span{font-size:13px;color:var(--muted)}
+#about .hd .ib{margin-left:auto;align-self:flex-start}
+#about pre{margin:0;padding:16px 24px 24px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.6;white-space:pre-wrap;color:var(--fg-2);border-top:1px solid var(--border)}
+.brand b{font-size:15px;font-weight:700;flex:1}
+.actions{display:flex;gap:6px;padding:4px 12px 4px}
+.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.btn svg{width:15px;height:15px}
+.sec{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 6px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.sec span{font-weight:600}
+#filter{margin:2px 12px 6px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px;outline:none;display:none}
+#filter:focus{border-color:var(--accent)}
+body.many #filter{display:block}
+#docs{padding:2px 8px 8px;overflow-y:auto;max-height:42vh;flex:none}
+.doc{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:8px;cursor:pointer}
+.doc:hover{background:var(--surface-2)}
+.doc.on{background:var(--accent-soft)}
+.doc.on .nm{color:var(--accent);font-weight:650}
+.doc>svg{width:16px;height:16px;color:var(--muted)}
+.doc.on>svg{color:var(--accent)}
+.doc .tx{flex:1;min-width:0}
+.doc .nm{font-size:14px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.doc .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);flex:none}
+.doc .x{opacity:0;border:0;background:none;padding:4px;border-radius:6px;cursor:pointer;color:var(--muted);display:grid}
+.doc:hover .x{opacity:1}
+.doc .x:hover{background:var(--border);color:var(--fg)}
+.doc .x svg{width:14px;height:14px}
+.none{padding:10px 20px;font-size:13px;color:var(--muted);line-height:1.6}
+.divider{height:1px;background:var(--border);margin:6px 16px 0}
+#toc{flex:1;overflow-y:auto;padding:2px 8px 24px;min-height:0}
+#toc a{display:block;color:var(--fg-2);text-decoration:none;font-size:13.5px;line-height:1.45;padding:5px 12px;border-radius:7px}
+#toc a:hover{background:var(--surface-2);color:var(--fg)}
+#toc a.on{color:var(--accent);font-weight:600;background:var(--accent-soft)}
+#toc a.l1{font-weight:650;color:var(--fg)}
+#toc a.l1.on{color:var(--accent)}
+#toc a.l3{padding-left:26px;font-size:13px}
+#toc a.l4{padding-left:40px;font-size:12.5px;color:var(--muted)}
+
+/* ── 메인 ── */
+#main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+#top{height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--bg)}
+#top .ttl{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px}
+#top .ttl b{font-size:15px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#top .ttl span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#status{font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+#status.dirty{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+#status.saved{color:var(--muted)}
+#top .tools{display:flex;align-items:center;gap:2px}
+.ib{border:0;background:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;cursor:pointer;color:var(--fg-2)}
+.ib:hover{background:var(--surface-2);color:var(--fg)}
+.ib.on{color:var(--accent);background:var(--accent-soft)}
+.ib.txt{width:auto;padding:0 10px;font-size:13px;font-weight:650;display:flex;align-items:center;gap:6px}
+.ib.txt svg{width:16px;height:16px}
+.sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+#content{flex:1;display:flex;min-height:0}
+#editor{display:none;flex:1;min-width:0;border:0;outline:none;resize:none;padding:40px 44px 160px;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.8;tab-size:2;overflow-wrap:break-word;border-right:1px solid var(--border)}
+body.editing #editor{display:block}
+#scroll{flex:1;min-width:0;overflow-y:auto}
+body.editing #scroll{background:var(--surface)}
+body.editing article{padding:40px 44px 160px}
+
+/* ── 본문 타이포그래피 ── */
+article{max-width:calc(var(--measure) + 112px);margin:0 auto;padding:48px 56px 160px;font-size:var(--fs);line-height:1.85;letter-spacing:-.003em;overflow-wrap:break-word;color:var(--fg)}
+body.wide article{--measure:100%;max-width:none}
+article>:first-child{margin-top:0!important}
+article h1,article h2,article h3,article h4,article h5,article h6{line-height:1.4;font-weight:700;letter-spacing:-.02em;scroll-margin-top:24px;color:var(--fg)}
+article h1{font-size:1.85em;font-weight:800;margin:0 0 .8em;padding-bottom:.45em;border-bottom:1px solid var(--border)}
+article h2{font-size:1.45em;margin:2.2em 0 .7em}
+article h3{font-size:1.2em;margin:1.9em 0 .6em}
+article h4{font-size:1.05em;margin:1.6em 0 .5em}
+article h5,article h6{font-size:1em;margin:1.4em 0 .5em;color:var(--fg-2)}
+article p{margin:0 0 1.15em}
+article a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+article a:hover{border-bottom-color:var(--accent)}
+article strong{font-weight:700}
+article ul,article ol{margin:0 0 1.15em;padding-left:1.5em}
+article li{margin:.35em 0;padding-left:.2em}
+article li::marker{color:var(--muted)}
+article li>ul,article li>ol{margin:.3em 0 .4em}
+article li>p{margin:0 0 .5em}
+article li:has(>input[type=checkbox]){list-style:none;margin-left:-1.4em}
+article input[type=checkbox]{width:16px;height:16px;margin:0 .5em 0 0;vertical-align:-2px;accent-color:var(--accent)}
+article blockquote{margin:0 0 1.2em;padding:.9em 1.2em;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--fg-2)}
+body.editing article blockquote{background:var(--bg)}
+article blockquote>:last-child{margin-bottom:0}
+article code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);color:var(--code-fg);padding:.15em .42em;border-radius:6px;word-break:break-all}
+article pre{position:relative;margin:0 0 1.3em;background:var(--pre-bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;overflow-x:auto;line-height:1.6}
+article pre code{background:none;color:var(--fg);padding:0;font-size:.82em;word-break:normal;white-space:pre}
+.copy{position:absolute;top:8px;right:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:7px;font-size:12px;padding:3px 9px;cursor:pointer;opacity:0;transition:opacity .15s}
+pre:hover .copy{opacity:1}
+.copy:hover{color:var(--fg)}
+.tbl{overflow-x:auto;margin:0 0 1.3em;border:1px solid var(--border);border-radius:10px;background:var(--bg)}
+article table{border-collapse:collapse;width:100%;font-size:.9em;line-height:1.6}
+article th,article td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+article th{background:var(--surface);font-weight:650;white-space:nowrap}
+article tr:last-child td{border-bottom:0}
+article td+td,article th+th{border-left:1px solid var(--border)}
+article img{max-width:100%;border-radius:8px}
+article hr{border:0;height:1px;background:var(--border);margin:2.4em 0}
+
+body.hangul article,body.hangul #editor,body.hangul #toc a,body.hangul .plaintxt{word-break:keep-all}
+:lang(ko) .card,:lang(ko) .none{word-break:keep-all}
+/* 언어별 CJK 글꼴 우선순위 */
+:root:lang(ja){--sans:"Pretendard Variable",Pretendard,"Segoe UI","Yu Gothic UI",Meiryo,"Malgun Gothic",sans-serif}
+:root:lang(zh){--sans:"Pretendard Variable",Pretendard,"Segoe UI","Microsoft YaHei UI","Microsoft YaHei","Malgun Gothic",sans-serif}
+#about .lang{display:flex;align-items:center;gap:8px;padding:0 24px 14px;font-size:13px;color:var(--fg-2)}
+#about .lang svg{width:16px;height:16px;color:var(--muted)}
+#about select{margin-left:auto;font:inherit;font-size:13px;color:var(--fg);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 8px;outline:none}
+#about select:focus{border-color:var(--accent)}
+
+/* ── JSON ── */
+body.codedoc #editor{font-family:var(--mono);font-size:14px;line-height:1.65;word-break:break-all}
+.yc{color:var(--muted);font-style:italic}.ym{color:var(--j-bool)}
+.plaintxt{white-space:pre-wrap;overflow-wrap:break-word;line-height:1.85}
+.doc .ext{font-size:10px;font-weight:700;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:0 4px;letter-spacing:.02em;flex:none}
+.jbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+.jbar .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.jbar button{border:0;background:var(--bg);padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--fg-2)}
+.jbar button:hover{color:var(--accent)}
+.jbar .seg button.on{background:var(--accent-soft);color:var(--accent)}
+.jbar .plain{border:1px solid var(--border);border-radius:8px}
+.jbar .info{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.jtree,.jraw{font-family:var(--mono);font-size:.8em;line-height:1.75;background:var(--pre-bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px 16px 30px;overflow-x:auto;margin:0}
+.jraw{padding-left:20px;white-space:pre}
+.jn{padding-left:16px;white-space:pre-wrap;word-break:break-all}
+.jtree>.jn{padding-left:0}
+.jn>summary{list-style:none;cursor:pointer;border-radius:5px;margin-left:-16px;padding-left:16px;position:relative}
+.jtree>.jn>summary{margin-left:-16px}
+.jn>summary::-webkit-details-marker{display:none}
+.jn>summary::before{content:'▸';position:absolute;left:2px;color:var(--muted);transition:transform .12s}
+.jn[open]>summary::before{transform:rotate(90deg)}
+.jn>summary:hover{background:var(--surface-2)}
+.jn[open]>summary>.jx{display:none}
+.jc{color:var(--muted);font-size:.9em;margin-left:8px;font-family:var(--sans)}
+.ch{border-left:1px dashed var(--border);margin-left:-11px;padding-left:11px}
+.jk{color:var(--j-key)}.ji{color:var(--muted)}.jv-s{color:var(--j-str)}.jv-n{color:var(--j-num)}.jv-b{color:var(--j-bool)}.jv-null{color:var(--muted);font-style:italic}
+.jmore{margin:4px 0 4px 16px;border:1px solid var(--border);background:var(--bg);color:var(--accent);border-radius:7px;font-size:12px;padding:3px 10px;cursor:pointer;font-family:var(--sans)}
+.jerr{margin:0 0 14px;padding:12px 16px;border-radius:10px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);font-size:14px;font-weight:600}
+
+/* ── 맨 위로 ── */
+#toTop{position:absolute;right:28px;bottom:28px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--fg-2);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s;z-index:6}
+#toTop.show{opacity:1;transform:none;pointer-events:auto}
+#toTop:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── 빈 화면 / 드래그 ── */
+#empty{flex:1;display:none;align-items:center;justify-content:center;padding:32px}
+body.blank #empty{display:flex}
+body.blank #content,body.blank #top .tools,body.blank #status{display:none}
+.card{width:min(520px,100%);border:2px dashed var(--border);border-radius:18px;padding:52px 32px;text-align:center}
+.card .logo{width:56px;height:56px;border-radius:14px;margin:0 auto 20px;font-size:20px}
+.card h2{margin:0 0 8px;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.card .row{display:flex;gap:8px;justify-content:center;margin-top:22px}
+.card .btn{flex:none;padding:9px 16px}
+kbd{font-family:var(--sans);font-size:12px;border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:var(--bg)}
+.keys{margin-top:22px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+#drop{position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:16px;background:color-mix(in srgb,var(--accent) 10%,transparent);display:none;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);z-index:20;pointer-events:none;backdrop-filter:blur(2px)}
+body.dragging #drop{display:flex}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13.5px;opacity:0;transition:.2s;pointer-events:none;z-index:30}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:860px){#side{position:fixed;inset:0 auto 0 0;z-index:15;box-shadow:var(--shadow)}article{padding:28px 20px 120px}}
+</style>
+</head>
+<body class="blank">
+<aside id="side">
+  <div class="brand"><img class="logo" src="icon.png" alt=""><b>Duru</b><button class="ib" id="aboutBtn" data-i18n-title="about_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button></div>
+  <div class="actions">
+    <button class="btn primary" id="newBtn" data-i18n-title="new_doc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="new_doc"></span></button>
+    <button class="btn" id="openBtn" data-i18n-title="open_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span data-i18n="open"></span></button>
+  </div>
+  <div class="sec"><span data-i18n="docs"></span> <span id="count"></span></div>
+  <input id="filter" data-i18n-ph="filter">
+  <div id="docs"></div>
+  <div class="divider"></div>
+  <div class="sec" data-i18n="toc"></div>
+  <nav id="toc"></nav>
+</aside>
+<main id="main">
+  <header id="top">
+    <button class="ib" id="sideBtn" data-i18n-title="side_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+    <div class="ttl"><b id="ttl"></b><span id="sub"></span></div>
+    <span id="status"></span>
+    <div class="tools">
+      <button class="ib txt" id="editBtn" data-i18n-title="edit_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span></span></button>
+      <button class="ib txt" id="saveBtn" data-i18n-title="save_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v6h9V3M7 21v-7h10v7"/></svg><span data-i18n="save"></span></button>
+      <div class="sep"></div>
+      <button class="ib txt" id="fsDown" data-i18n="fs_down" data-i18n-title="fs_down_tip"></button>
+      <button class="ib txt" id="fsUp" data-i18n="fs_up" data-i18n-title="fs_up_tip"></button>
+      <button class="ib" id="wideBtn" data-i18n-title="wide_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg></button>
+      <div class="sep"></div>
+    </div>
+    <button class="ib" id="themeBtn" data-i18n-title="theme_tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></button>
+  </header>
+  <div id="content">
+    <textarea id="editor" spellcheck="false" data-i18n-ph="editor_ph"></textarea>
+    <div id="scroll"><article id="doc"></article></div>
+  </div>
+  <button id="toTop" data-i18n-title="to_top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  <div id="empty">
+    <div class="card">
+      <img class="logo" src="icon.png" alt="">
+      <h2 data-i18n="empty_h"></h2>
+      <p>.md · .json · .yaml · .txt</p>
+      <p data-i18n="empty_p"></p>
+      <div class="row">
+        <button class="btn primary" id="emptyNew" data-i18n="empty_new"></button>
+        <button class="btn" id="emptyOpen" data-i18n="empty_open"></button>
+      </div>
+      <div class="keys"><span><kbd>Ctrl</kbd>+<kbd>O</kbd> <span data-i18n="open"></span></span><span><kbd>Ctrl</kbd>+<kbd>E</kbd> <span data-i18n="edit"></span></span><span><kbd>Ctrl</kbd>+<kbd>S</kbd> <span data-i18n="save"></span></span></div>
+    </div>
+  </div>
+</main>
+<input type="file" id="pick" accept=".md,.markdown,.mdown,.txt,.json,.yaml,.yml" multiple hidden>
+<div id="drop" data-i18n="drop"></div>
+<div id="toast"></div>
+<div id="about"><div class="box">
+  <div class="hd"><img src="icon.png" alt=""><div><b>Duru</b><span>v__VERSION__ · <span data-i18n="tagline"></span></span></div>
+  <button class="ib" id="aboutClose" data-i18n-title="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="lang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span data-i18n="language"></span><select id="langSel"></select></div>
+  <pre id="notices"></pre>
+</div></div>
+<script src="marked.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const body = document.body, art = $('doc'), scroller = $('scroll'), editor = $('editor');
+
+/* ── 언어 (Windows 언어를 따라가고, 정보 창에서 바꿀 수 있음) ── */
+const I18N = {
+  en: {
+    _name: 'English', about_tip: 'About · Licenses', new_doc: 'New', open: 'Open', open_tip: 'Open file (Ctrl+O)', docs: 'Documents',
+    filter: 'Search documents', toc: 'Contents', side_tip: 'Sidebar (T)', edit_tip: 'Edit / View (Ctrl+E)', edit: 'Edit', view: 'View',
+    save: 'Save', save_tip: 'Save (Ctrl+S) · Save as (Ctrl+Shift+S)', fs_down: 'A−', fs_up: 'A+', fs_down_tip: 'Smaller text', fs_up_tip: 'Larger text',
+    wide_tip: 'Wide layout', theme_tip: 'Dark / Light (D)', editor_ph: '# Title\n\nWrite in Markdown here.', to_top: 'Back to top',
+    empty_h: 'Drop files here', empty_p: 'You can drop several at once.', empty_new: 'New document', empty_open: 'Open file',
+    drop: 'Drop to add to your documents', tagline: 'View and edit Markdown, JSON, YAML and text', close: 'Close', loading: 'Loading…', language: 'Language',
+    confirm_remove: 'This document has unsaved changes. Remove it from the list anyway?', kept: 'You have unsaved edits, so the file was not overwritten',
+    added: '{0} documents added', only_types: 'Only .md, .json, .yaml and .txt files can be opened', untitled: 'Untitled',
+    json_bad: 'This JSON is not valid.\n\n{0}\n\nSave anyway?', save_orig: 'Save to the original file?\n\n{0}', saved_toast: 'Saved',
+    saved_as: 'Saved as \'{0}\'. Ctrl+S now saves straight to this file.', save_fail: 'Could not save: {0}', reloaded: 'The file changed on disk and was reloaded',
+    n_items: '{0} items', n_keys: '{0} keys', more: 'Show {0} more', tree: 'Tree', text: 'Text', expand: 'Expand all', collapse: 'Collapse all',
+    copy: 'Copy', copied: 'Copied', arr_info: 'Array · {0} items', obj_info: 'Object · {0} keys', partial: 'Too large — only part was expanded',
+    json_err: 'JSON error: {0}', toc_json_err: 'JSON error', toc_raw: 'No contents in text view', toc_nokeys: 'No top-level keys',
+    toc_txt: 'Text files have no contents', toc_md: 'No headings (#) in this document', yaml_info: 'YAML · {0} lines',
+    sub_new: 'New document, not saved yet', sub_drop: 'Dropped file · you choose where to save it', unsaved: '● Unsaved', saved: 'Saved',
+    list_empty: 'No documents yet.<br>Click [New] or drop files here.', l_new: 'New document', l_drop: 'Dropped file',
+    remove_tip: 'Remove from list', cant_open: 'Cannot open this file', fs_toast: 'Text size {0}'
+  },
+  ko: {
+    _name: '한국어', about_tip: '정보 · 라이선스', new_doc: '새 문서', open: '열기', open_tip: '파일 열기 (Ctrl+O)', docs: '문서',
+    filter: '문서 검색', toc: '목차', side_tip: '사이드바 (T)', edit_tip: '편집 / 보기 (Ctrl+E)', edit: '편집', view: '보기',
+    save: '저장', save_tip: '저장 (Ctrl+S) · 다른 이름으로 (Ctrl+Shift+S)', fs_down: '가-', fs_up: '가+', fs_down_tip: '글자 작게', fs_up_tip: '글자 크게',
+    wide_tip: '본문 넓게', theme_tip: '다크/라이트 (D)', editor_ph: '# 제목\n\n여기에 마크다운으로 작성하세요.', to_top: '맨 위로',
+    empty_h: '파일을 끌어다 놓으세요', empty_p: '여러 개를 한 번에 놓아도 돼요.', empty_new: '새 문서 만들기', empty_open: '파일 열기',
+    drop: '놓으면 문서 목록에 추가돼요', tagline: 'Markdown · JSON · YAML · 텍스트를 두루 보고 고치는 에디터', close: '닫기', loading: '불러오는 중…', language: '언어',
+    confirm_remove: '저장하지 않은 내용이 있어요. 목록에서 뺄까요?', kept: '편집 중인 내용이 있어서 파일로 덮어쓰지 않았어요',
+    added: '{0}개 문서를 추가했어요', only_types: '.md · .json · .yaml · .txt 파일만 열 수 있어요', untitled: '제목 없음',
+    json_bad: 'JSON 형식이 올바르지 않아요.\n\n{0}\n\n그래도 저장할까요?', save_orig: '원래 파일에 저장할까요?\n\n{0}', saved_toast: '저장했어요',
+    saved_as: '\'{0}\'(으)로 저장했어요. 다음부터 Ctrl+S 로 바로 저장돼요', save_fail: '저장하지 못했어요: {0}', reloaded: '파일이 바뀌어서 다시 불러왔어요',
+    n_items: '{0}개', n_keys: '{0}개 키', more: '나머지 {0}개 더 보기', tree: '트리', text: '텍스트', expand: '모두 펼치기', collapse: '모두 접기',
+    copy: '복사', copied: '복사했어요', arr_info: '배열 · {0}개 항목', obj_info: '객체 · {0}개 키', partial: '너무 커서 일부만 펼쳤어요',
+    json_err: 'JSON 형식 오류: {0}', toc_json_err: 'JSON 형식 오류', toc_raw: '텍스트 보기에서는 목차가 없어요', toc_nokeys: '최상위 키가 없어요',
+    toc_txt: '텍스트 파일은 목차가 없어요', toc_md: '제목(#)이 없는 문서예요', yaml_info: 'YAML · {0}줄',
+    sub_new: '아직 저장 안 한 새 문서', sub_drop: '끌어다 놓은 파일 · 저장하면 위치를 정해요', unsaved: '● 저장 안 됨', saved: '저장됨',
+    list_empty: '아직 문서가 없어요.<br>[새 문서]로 만들거나 파일을 끌어다 놓으세요.', l_new: '새 문서', l_drop: '끌어다 놓은 파일',
+    remove_tip: '목록에서 빼기', cant_open: '파일을 열 수 없어요', fs_toast: '글자 크기 {0}'
+  },
+  ja: {
+    _name: '日本語', about_tip: '情報 · ライセンス', new_doc: '新規', open: '開く', open_tip: 'ファイルを開く (Ctrl+O)', docs: 'ドキュメント',
+    filter: 'ドキュメントを検索', toc: '目次', side_tip: 'サイドバー (T)', edit_tip: '編集 / 表示 (Ctrl+E)', edit: '編集', view: '表示',
+    save: '保存', save_tip: '保存 (Ctrl+S) · 名前を付けて保存 (Ctrl+Shift+S)', fs_down: 'あ−', fs_up: 'あ+', fs_down_tip: '文字を小さく', fs_up_tip: '文字を大きく',
+    wide_tip: '本文を広く', theme_tip: 'ダーク / ライト (D)', editor_ph: '# タイトル\n\nここに Markdown で書いてください。', to_top: 'トップへ',
+    empty_h: 'ファイルをドロップしてください', empty_p: '複数まとめてドロップできます。', empty_new: '新規ドキュメント', empty_open: 'ファイルを開く',
+    drop: 'ドロップするとドキュメント一覧に追加されます', tagline: 'Markdown · JSON · YAML · テキストを表示・編集', close: '閉じる', loading: '読み込み中…', language: '言語',
+    confirm_remove: '保存していない変更があります。一覧から外しますか？', kept: '編集中の内容があるため、ファイルで上書きしませんでした',
+    added: '{0} 件のドキュメントを追加しました', only_types: '.md · .json · .yaml · .txt ファイルのみ開けます', untitled: '無題',
+    json_bad: 'JSON の形式が正しくありません。\n\n{0}\n\nこのまま保存しますか？', save_orig: '元のファイルに保存しますか？\n\n{0}', saved_toast: '保存しました',
+    saved_as: '「{0}」として保存しました。次からは Ctrl+S ですぐ保存できます', save_fail: '保存できませんでした: {0}', reloaded: 'ファイルが変更されたため再読み込みしました',
+    n_items: '{0} 件', n_keys: '{0} キー', more: '残り {0} 件を表示', tree: 'ツリー', text: 'テキスト', expand: 'すべて展開', collapse: 'すべて折りたたむ',
+    copy: 'コピー', copied: 'コピーしました', arr_info: '配列 · {0} 件', obj_info: 'オブジェクト · {0} キー', partial: '大きすぎるため一部のみ展開しました',
+    json_err: 'JSON 形式エラー: {0}', toc_json_err: 'JSON 形式エラー', toc_raw: 'テキスト表示では目次がありません', toc_nokeys: 'トップレベルのキーがありません',
+    toc_txt: 'テキストファイルには目次がありません', toc_md: '見出し (#) のないドキュメントです', yaml_info: 'YAML · {0} 行',
+    sub_new: 'まだ保存していない新規ドキュメント', sub_drop: 'ドロップしたファイル · 保存時に場所を選びます', unsaved: '● 未保存', saved: '保存済み',
+    list_empty: 'まだドキュメントがありません。<br>[新規] で作るか、ファイルをドロップしてください。', l_new: '新規ドキュメント', l_drop: 'ドロップしたファイル',
+    remove_tip: '一覧から外す', cant_open: 'ファイルを開けません', fs_toast: '文字サイズ {0}'
+  },
+  zh: {
+    _name: '简体中文', about_tip: '关于 · 许可', new_doc: '新建', open: '打开', open_tip: '打开文件 (Ctrl+O)', docs: '文档',
+    filter: '搜索文档', toc: '目录', side_tip: '侧边栏 (T)', edit_tip: '编辑 / 查看 (Ctrl+E)', edit: '编辑', view: '查看',
+    save: '保存', save_tip: '保存 (Ctrl+S) · 另存为 (Ctrl+Shift+S)', fs_down: 'A−', fs_up: 'A+', fs_down_tip: '缩小文字', fs_up_tip: '放大文字',
+    wide_tip: '加宽正文', theme_tip: '深色 / 浅色 (D)', editor_ph: '# 标题\n\n在这里用 Markdown 书写。', to_top: '回到顶部',
+    empty_h: '把文件拖到这里', empty_p: '可以一次拖入多个文件。', empty_new: '新建文档', empty_open: '打开文件',
+    drop: '松开即可添加到文档列表', tagline: '查看和编辑 Markdown · JSON · YAML · 文本', close: '关闭', loading: '加载中…', language: '语言',
+    confirm_remove: '有未保存的更改。仍要从列表中移除吗？', kept: '有正在编辑的内容，未用文件覆盖',
+    added: '已添加 {0} 个文档', only_types: '只能打开 .md · .json · .yaml · .txt 文件', untitled: '未命名',
+    json_bad: 'JSON 格式不正确。\n\n{0}\n\n仍要保存吗？', save_orig: '保存到原文件吗？\n\n{0}', saved_toast: '已保存',
+    saved_as: '已保存为“{0}”。以后按 Ctrl+S 即可直接保存', save_fail: '无法保存：{0}', reloaded: '文件已被修改，已重新加载',
+    n_items: '{0} 项', n_keys: '{0} 个键', more: '显示其余 {0} 项', tree: '树形', text: '文本', expand: '全部展开', collapse: '全部折叠',
+    copy: '复制', copied: '已复制', arr_info: '数组 · {0} 项', obj_info: '对象 · {0} 个键', partial: '内容过大，只展开了一部分',
+    json_err: 'JSON 格式错误：{0}', toc_json_err: 'JSON 格式错误', toc_raw: '文本视图中没有目录', toc_nokeys: '没有顶层键',
+    toc_txt: '文本文件没有目录', toc_md: '此文档没有标题 (#)', yaml_info: 'YAML · {0} 行',
+    sub_new: '尚未保存的新文档', sub_drop: '拖入的文件 · 保存时选择位置', unsaved: '● 未保存', saved: '已保存',
+    list_empty: '还没有文档。<br>点击 [新建] 或把文件拖到这里。', l_new: '新文档', l_drop: '拖入的文件',
+    remove_tip: '从列表移除', cant_open: '无法打开此文件', fs_toast: '文字大小 {0}'
+  },
+  es: {
+    _name: 'Español', about_tip: 'Acerca de · Licencias', new_doc: 'Nuevo', open: 'Abrir', open_tip: 'Abrir archivo (Ctrl+O)', docs: 'Documentos',
+    filter: 'Buscar documentos', toc: 'Índice', side_tip: 'Barra lateral (T)', edit_tip: 'Editar / Ver (Ctrl+E)', edit: 'Editar', view: 'Ver',
+    save: 'Guardar', save_tip: 'Guardar (Ctrl+S) · Guardar como (Ctrl+Mayús+S)', fs_down: 'A−', fs_up: 'A+', fs_down_tip: 'Texto más pequeño', fs_up_tip: 'Texto más grande',
+    wide_tip: 'Diseño ancho', theme_tip: 'Oscuro / Claro (D)', editor_ph: '# Título\n\nEscribe aquí en Markdown.', to_top: 'Volver arriba',
+    empty_h: 'Suelta archivos aquí', empty_p: 'Puedes soltar varios a la vez.', empty_new: 'Nuevo documento', empty_open: 'Abrir archivo',
+    drop: 'Suelta para añadir a tus documentos', tagline: 'Visor y editor de Markdown, JSON, YAML y texto', close: 'Cerrar', loading: 'Cargando…', language: 'Idioma',
+    confirm_remove: 'Este documento tiene cambios sin guardar. ¿Quitarlo de la lista de todos modos?', kept: 'Hay cambios sin guardar, así que no se sobrescribió con el archivo',
+    added: '{0} documentos añadidos', only_types: 'Solo se pueden abrir archivos .md, .json, .yaml y .txt', untitled: 'Sin título',
+    json_bad: 'Este JSON no es válido.\n\n{0}\n\n¿Guardar de todos modos?', save_orig: '¿Guardar en el archivo original?\n\n{0}', saved_toast: 'Guardado',
+    saved_as: 'Guardado como \'{0}\'. Ahora Ctrl+S guarda directamente en este archivo.', save_fail: 'No se pudo guardar: {0}', reloaded: 'El archivo cambió en el disco y se volvió a cargar',
+    n_items: '{0} elementos', n_keys: '{0} claves', more: 'Mostrar {0} más', tree: 'Árbol', text: 'Texto', expand: 'Expandir todo', collapse: 'Contraer todo',
+    copy: 'Copiar', copied: 'Copiado', arr_info: 'Array · {0} elementos', obj_info: 'Objeto · {0} claves', partial: 'Demasiado grande: solo se expandió una parte',
+    json_err: 'Error de JSON: {0}', toc_json_err: 'Error de JSON', toc_raw: 'No hay índice en la vista de texto', toc_nokeys: 'No hay claves de primer nivel',
+    toc_txt: 'Los archivos de texto no tienen índice', toc_md: 'Este documento no tiene títulos (#)', yaml_info: 'YAML · {0} líneas',
+    sub_new: 'Documento nuevo, aún sin guardar', sub_drop: 'Archivo soltado · eliges dónde guardarlo', unsaved: '● Sin guardar', saved: 'Guardado',
+    list_empty: 'Aún no hay documentos.<br>Pulsa [Nuevo] o suelta archivos aquí.', l_new: 'Documento nuevo', l_drop: 'Archivo soltado',
+    remove_tip: 'Quitar de la lista', cant_open: 'No se puede abrir este archivo', fs_toast: 'Tamaño de texto {0}'
+  }
+};
+const SYS_LANG = '__LANG__';
+const pickLang = c => I18N[c] ? c : 'en';
+let LANG = 'en';
+const t = (k, ...a) => ((I18N[LANG] || I18N.en)[k] ?? I18N.en[k] ?? k).replace(/\{(\d)\}/g, (_, i) => a[i]);
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = t(el.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+}
+
+/* ── 저장소 ── */
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem('mdv-' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('mdv-' + k, JSON.stringify(v)); } catch (e) {} }
+};
+const DB = (() => {
+  let p;
+  const open = () => p || (p = new Promise((res, rej) => {
+    const r = indexedDB.open('mdviewer', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('docs', { keyPath: 'key' });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('docs', mode), req = fn(t.objectStore('docs'));
+    t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    all: () => Promise.race([tx('readonly', s => s.getAll()), new Promise(r => setTimeout(() => r([]), 1500))]).catch(() => []),
+    put: d => tx('readwrite', s => s.put(d)).catch(() => {}),
+    del: k => tx('readwrite', s => s.delete(k)).catch(() => {})
+  };
+})();
+// IndexedDB 가 막힌 환경 대비 localStorage 에도 백업
+const backup = () => ls.set('docs', docs);
+const persist = d => { DB.put(d); backup(); };
+
+/* ── 로컬 도우미(exe) API ── */
+const TOKEN = '__TOKEN__';
+async function api(name, data) {
+  const r = await fetch('/api/' + name, { method: 'POST', headers: { 'X-Token': TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(data || {}) });
+  if (!r.ok) throw new Error(await r.text() || r.status);
+  return r.json();
+}
+
+/* ── 인코딩 자동 감지 ── */
+function decodeBytes(u8) {
+  if (u8[0] === 0xFF && u8[1] === 0xFE) return new TextDecoder('utf-16le').decode(u8);
+  if (u8[0] === 0xFE && u8[1] === 0xFF) return new TextDecoder('utf-16be').decode(u8);
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(u8); }
+  catch (e) { return new TextDecoder(ANSI).decode(u8); }
+}
+const ANSI = (() => { try { const n = '__ANSI__'; new TextDecoder(n); return n === 'utf-8' ? 'windows-1252' : n; } catch (e) { return 'windows-1252'; } })();
+const b64bytes = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+
+/* ── 상태 ── */
+const prefs = Object.assign({ fs: 17, wide: false, side: true, theme: null }, ls.get('prefs', {}));
+let docs = [];            // {key,name,path,dir,text,mtime,added,dirty,isNew}
+let active = ls.get('active', null);
+let editing = false;
+const scrollPos = ls.get('scroll', {});
+const savePrefs = () => ls.set('prefs', prefs);
+const cur = () => docs.find(x => x.key === active);
+const dirOf = p => p.replace(/[\\/][^\\/]*$/, '');
+
+function applyPrefs() {
+  document.documentElement.style.setProperty('--fs', prefs.fs + 'px');
+  if (prefs.theme) document.documentElement.dataset.theme = prefs.theme; else delete document.documentElement.dataset.theme;
+  body.classList.toggle('wide', prefs.wide);
+  body.classList.toggle('side-off', !prefs.side);
+  $('wideBtn').classList.toggle('on', prefs.wide);
+}
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ── 문서 추가/삭제 ── */
+function addDoc(d) {
+  const old = docs.find(x => x.key === d.key);
+  if (old) Object.assign(old, d, { added: old.added }); else docs.push(d);
+  persist(old || d);
+  active = d.key;
+}
+function removeDoc(key) {
+  const i = docs.findIndex(d => d.key === key); if (i < 0) return;
+  if (docs[i].dirty && !confirm(t('confirm_remove'))) return;
+  docs.splice(i, 1); DB.del(key); backup(); delete scrollPos[key]; ls.set('scroll', scrollPos);
+  if (active === key) { active = docs.length ? docs[Math.min(i, docs.length - 1)].key : null; setEditing(false); }
+  refresh();
+}
+// 경로가 있는 파일 (탐색기·열기 대화상자에서 온 것)
+function importEntries(list) {
+  let n = 0;
+  for (const e of list || []) {
+    const lp = e.path.toLowerCase();
+    const old = docs.find(x => x.path && x.path.toLowerCase() === lp);
+    if (old && old.dirty) { active = old.key; toast(t('kept')); continue; }
+    addDoc({ key: old ? old.key : 'path:' + lp, name: e.name, path: e.path, dir: dirOf(e.path), text: decodeBytes(b64bytes(e.b64)),
+             mtime: e.mtime, added: Date.now(), dirty: false, isNew: false });
+    n++;
+  }
+  if (n) { setEditing(false); refresh(); if (n > 1) toast(t('added', n)); }
+  else if (list && list.length) refresh();
+}
+// 끌어다 놓은 파일: 원래 위치를 찾으면 그 파일로 연결(Ctrl+S 로 바로 저장), 못 찾으면 처음 저장할 때만 위치를 물어봄
+async function addFiles(files) {
+  let n = 0;
+  const found = [];
+  for (const file of files) {
+    if (!DOC_EXT.test(file.name)) continue;
+    try {
+      const m = await api('locate', { name: file.name, size: file.size, mtime: file.lastModified });
+      if (m.length === 1) { found.push(m[0]); continue; }
+    } catch (e) {}
+    const text = decodeBytes(new Uint8Array(await file.arrayBuffer()));
+    const same = docs.find(x => x.key === 'drop:' + file.name);
+    if (same && same.dirty) { active = same.key; toast(t('kept')); continue; }
+    addDoc({ key: 'drop:' + file.name, name: file.name, path: '', dir: '', text, mtime: null, added: Date.now(), dirty: false, isNew: false });
+    n++;
+  }
+  if (found.length) importEntries(found);
+  if (!n) { if (!found.length && files.length) toast(t('only_types')); return; }
+  setEditing(false); refresh(); if (n + found.length > 1) toast(t('added', n + found.length));
+}
+async function openFiles() {
+  try { importEntries(await api('open')); }
+  catch (e) { $('pick').click(); }
+}
+function newDoc() {
+  let n = 1, name;
+  do { name = n === 1 ? t('untitled') + '.md' : `${t('untitled')} ${n}.md`; n++; } while (docs.some(d => d.name === name));
+  addDoc({ key: 'new:' + Date.now(), name, path: '', dir: '', text: '# ', mtime: null, added: Date.now(), dirty: true, isNew: true });
+  refresh(); setEditing(true);
+  editor.setSelectionRange(2, 2);
+}
+
+/* ── 저장: 경로가 있으면 Ctrl+S 로 바로 저장, 없으면 처음 한 번만 위치 선택 ── */
+let saving = false;
+async function save(saveAs) {
+  const d = cur(); if (!d || saving) return;
+  if (isJson(d)) {
+    try { JSON.parse(d.text.replace(/^﻿/, '')); }
+    catch (e) { if (!confirm(t('json_bad', e.message))) return; }
+  }
+  saving = true;
+  try {
+    // 예전에 끌어다 놓아 경로가 없는 기존 파일 → 원래 위치를 찾아 거기에 저장
+    if (!d.path && !d.isNew && !saveAs) {
+      try {
+        const m = await api('locate', { name: d.name });
+        if (m.length === 1 && confirm(t('save_orig', m[0].path))) Object.assign(d, { path: m[0].path, dir: dirOf(m[0].path), key: d.key });
+      } catch (e) {}
+    }
+    if (d.path && !saveAs) {
+      const r = await api('save', { path: d.path, text: d.text });
+      Object.assign(d, { mtime: r.mtime, dirty: false });
+      toast(t('saved_toast'));
+    } else {
+      const r = await api('saveas', { name: d.name, dir: d.dir, text: d.text });
+      if (!r) return;
+      // 같은 경로의 다른 항목이 있으면 정리
+      const dup = docs.find(x => x !== d && x.path && x.path.toLowerCase() === r.path.toLowerCase());
+      if (dup) { docs.splice(docs.indexOf(dup), 1); DB.del(dup.key); }
+      Object.assign(d, { path: r.path, dir: dirOf(r.path), name: r.name, mtime: r.mtime, dirty: false, isNew: false });
+      toast(t('saved_as', r.name));
+    }
+    persist(d); renderList(); renderHeader(d);
+  } catch (e) { toast(t('save_fail', e.message)); }
+  finally { saving = false; }
+}
+
+/* ── 새로 들어온 파일 받기 + 열린 파일이 밖에서 바뀌면 다시 불러오기 ── */
+async function poll() {
+  try { const list = await api('inbox'); if (list.length) importEntries(list); } catch (e) {}
+}
+async function watch() {
+  const d = cur();
+  if (!d || !d.path || d.dirty) return;
+  try {
+    const m = await api('stat', { path: d.path });
+    if (!m || m === d.mtime) return;
+    const e = await api('read', { path: d.path });
+    if (!e || cur() !== d || d.dirty) return;
+    Object.assign(d, { text: decodeBytes(b64bytes(e.b64)), mtime: e.mtime });
+    persist(d);
+    const top = scroller.scrollTop;
+    renderBody(d); scroller.scrollTop = top;
+    if (editing) { const s = editor.selectionStart; editor.value = d.text; editor.setSelectionRange(s, s); }
+    toast(t('reloaded'));
+  } catch (e) {}
+}
+
+/* ── 렌더링 ── */
+const fileUrl = p => '/local/' + TOKEN + '/' + encodeURIComponent(p);
+function resolvePath(dir, rel) {
+  const parts = dir.split(/[\\/]/);
+  let r = rel.replace(/[?#].*$/, '');
+  try { r = decodeURIComponent(r); } catch (e) {}
+  for (const seg of r.split(/[\\/]/)) { if (seg === '..') parts.pop(); else if (seg && seg !== '.') parts.push(seg); }
+  return parts.join('\\');
+}
+function slug(t, used) {
+  let id = t.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'section';
+  if (used[id]) id += '-' + used[id]++; else used[id] = 1;
+  return id;
+}
+// 문서 맨 위 메타데이터(front matter: title/type/status/tags 등)는 화면에 안 보이게 한다. 파일 내용은 그대로 둔다.
+const META_KEYS = /^(title|type|status|owner|author|tags|created_at|updated_at|created|updated|date|description|category|version|slug|draft|lang)\s*:/im;
+function stripFront(t) {
+  t = t.replace(/^﻿/, '');
+  let m = t.match(/^\s*---[ \t]*\r?\n(?:[\s\S]*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/);
+  if (m) return t.slice(m[0].length);
+  // 구분선(---) 없이 맨 위에 "키: 값" 줄만 모여 있는 경우
+  m = t.match(/^\s*((?:[A-Za-z_][\w-]*[ \t]*:[^\n]*(?:\r?\n|$)){2,})/);
+  if (m && META_KEYS.test(m[1])) return t.slice(m[0].length);
+  return t;
+}
+let heads = [];
+function buildToc(items, emptyMsg) {
+  const toc = $('toc'); toc.innerHTML = ''; heads = [];
+  for (const [el, text, lv] of items) {
+    const a = document.createElement('a');
+    a.href = '#' + el.id; a.textContent = text; a.title = text; a.className = 'l' + lv;
+    toc.appendChild(a); heads.push([el, a]);
+  }
+  if (!heads.length) toc.innerHTML = '<div class="none">' + emptyMsg + '</div>';
+  spy();
+}
+
+/* ── JSON 보기 (트리 / 텍스트) ── */
+const DOC_EXT = /\.(md|markdown|mdown|txt|json|ya?ml)$/i;
+const kindOf = d => /\.json$/i.test(d.name) ? 'json' : /\.ya?ml$/i.test(d.name) ? 'yaml' : /\.txt$/i.test(d.name) ? 'txt' : 'md';
+const isJson = d => kindOf(d) === 'json';
+const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+const JSON_CHUNK = 300;
+function jSpan(cls, text) { const s = document.createElement('span'); s.className = cls; s.textContent = text; return s; }
+function jLeaf(v) {
+  if (v === null) return jSpan('jv-null', 'null');
+  if (typeof v === 'string') return jSpan('jv-s', JSON.stringify(v));
+  if (typeof v === 'number') return jSpan('jv-n', String(v));
+  return jSpan('jv-b', String(v));
+}
+function jNode(k, v, depth, inArr, last) {
+  const comma = last ? '' : ',';
+  const head = el => { if (k !== null) el.append(inArr ? jSpan('ji', k) : jSpan('jk', JSON.stringify(k)), ': '); };
+  if (v && typeof v === 'object') {
+    const arr = Array.isArray(v), keys = arr ? null : Object.keys(v), n = arr ? v.length : keys.length;
+    const o = arr ? '[' : '{', c = arr ? ']' : '}';
+    if (!n) { const row = document.createElement('div'); row.className = 'jn'; head(row); row.append(o + c + comma); return row; }
+    const det = document.createElement('details'); det.className = 'jn';
+    const sum = document.createElement('summary'); head(sum); sum.append(o, jSpan('jx', '…' + c + comma), jSpan('jc', t(arr ? 'n_items' : 'n_keys', n)));
+    det.append(sum);
+    let built = false;
+    det._build = () => {
+      if (built) return; built = true;
+      const ch = document.createElement('div'); ch.className = 'ch';
+      const add = start => {
+        const end = Math.min(n, start + JSON_CHUNK);
+        for (let i = start; i < end; i++) {
+          const key = arr ? String(i) : keys[i];
+          const node = jNode(key, arr ? v[i] : v[key], depth + 1, arr, i === n - 1);
+          if (depth === 0) node.dataset.key = arr ? '[' + i + ']' : key;
+          ch.appendChild(node);
+        }
+        if (end < n) {
+          const b = document.createElement('button'); b.className = 'jmore'; b.textContent = t('more', n - end);
+          b.onclick = e => { e.stopPropagation(); b.remove(); add(end); };
+          ch.appendChild(b);
+        }
+      };
+      add(0);
+      const close = document.createElement('div'); close.textContent = c + comma;
+      det.append(ch, close);
+    };
+    det.addEventListener('toggle', () => { if (det.open) det._build(); });
+    if (depth < 2) { det._build(); det.open = true; }
+    return det;
+  }
+  const row = document.createElement('div'); row.className = 'jn'; head(row); row.append(jLeaf(v), comma); return row;
+}
+function hlJson(s) {
+  if (s.length > 1500000) return esc(s);
+  return esc(s).replace(/("(?:\\.|[^"\\\n])*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g, (m, str, colon, bool) => {
+    if (str) return colon ? `<span class="jk">${str}</span>${colon}` : `<span class="jv-s">${str}</span>`;
+    if (bool) return `<span class="jv-b">${m}</span>`;
+    if (m === 'null') return `<span class="jv-null">${m}</span>`;
+    return `<span class="jv-n">${m}</span>`;
+  });
+}
+function renderJson(d) {
+  const src = d.text.replace(/^﻿/, '');
+  let v, err = null;
+  try { v = JSON.parse(src); } catch (e) { err = e.message; }
+  art.innerHTML = '';
+  const bar = document.createElement('div'); bar.className = 'jbar';
+  const raw = err !== null || prefs.jsonRaw;
+  bar.innerHTML = `<div class="seg"><button data-v="tree">${t('tree')}</button><button data-v="raw">${t('text')}</button></div>`
+    + `<button class="plain" data-a="open">${t('expand')}</button><button class="plain" data-a="close">${t('collapse')}</button>`
+    + `<button class="plain" data-a="copy">${t('copy')}</button><span class="info"></span>`;
+  bar.querySelector(`[data-v="${raw ? 'raw' : 'tree'}"]`).classList.add('on');
+  if (err !== null) bar.querySelectorAll('[data-v="tree"],[data-a="open"],[data-a="close"]').forEach(b => b.disabled = true);
+  bar.querySelector('.info').textContent = err !== null ? '' : Array.isArray(v) ? t('arr_info', v.length) : v && typeof v === 'object' ? t('obj_info', Object.keys(v).length) : typeof v;
+  art.appendChild(bar);
+  if (err !== null) { const e = document.createElement('div'); e.className = 'jerr'; e.textContent = t('json_err', err); art.appendChild(e); }
+  let tree = null;
+  if (raw) {
+    const pre = document.createElement('pre'); pre.className = 'jraw';
+    pre.innerHTML = err !== null ? esc(src) : hlJson(JSON.stringify(v, null, 2));
+    art.appendChild(pre);
+  } else {
+    tree = document.createElement('div'); tree.className = 'jtree';
+    tree.appendChild(jNode(null, v, 0, false, true));
+    art.appendChild(tree);
+  }
+  bar.onclick = e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.v) { prefs.jsonRaw = b.dataset.v === 'raw'; savePrefs(); renderJson(d); return; }
+    if (b.dataset.a === 'copy') { navigator.clipboard.writeText(err !== null ? src : JSON.stringify(v, null, 2)).then(() => toast(t('copied'))); return; }
+    if (!tree) { prefs.jsonRaw = false; savePrefs(); renderJson(d); tree = art.querySelector('.jtree'); if (!tree) return; }
+    if (b.dataset.a === 'close') { tree.querySelectorAll('details.jn').forEach(x => x.open = false); tree.firstChild.open = true; return; }
+    let made = 0, list;
+    while ((list = tree.querySelectorAll('details.jn:not([open])')).length && made < 20000) {
+      list.forEach(x => { x._build(); x.open = true; made++; });
+    }
+    if (made >= 20000) toast(t('partial'));
+  };
+  // 목차: 최상위 키
+  const items = [], used = {};
+  art.querySelectorAll('.jtree>.jn>.ch>.jn').forEach((el, i) => {
+    if (i >= 500) return;
+    el.id = 'j-' + slug(el.dataset.key, used);
+    items.push([el, el.dataset.key, 2]);
+  });
+  buildToc(items, t(err !== null ? 'toc_json_err' : raw ? 'toc_raw' : 'toc_nokeys'));
+}
+
+/* ── YAML 보기 (색 구분 + 최상위 키 목차) ── */
+function hlYVal(v) {
+  if (!v) return '';
+  let val = v, cmt = '';
+  if (!/^["']/.test(v)) { const i = v.search(/\s#/); if (i >= 0) { val = v.slice(0, i); cmt = v.slice(i); } }
+  const t = val.trim();
+  let out;
+  if (/^(["']).*\1$/.test(t)) out = `<span class="jv-s">${esc(val)}</span>`;
+  else if (/^(true|false|yes|no|on|off)$/i.test(t)) out = `<span class="jv-b">${esc(val)}</span>`;
+  else if (/^(null|~)$/i.test(t)) out = `<span class="jv-null">${esc(val)}</span>`;
+  else if (/^[-+]?(\d[\d_]*(\.\d+)?([eE][-+]?\d+)?|0x[\da-f]+|\.inf|\.nan)$/i.test(t)) out = `<span class="jv-n">${esc(val)}</span>`;
+  else if (/^([|>][-+]?\d*|[&*!]\S*)$/.test(t)) out = `<span class="ym">${esc(val)}</span>`;
+  else if (/^[\[{]/.test(t)) out = esc(val);
+  else out = `<span class="jv-s">${esc(val)}</span>`;
+  return out + (cmt ? `<span class="yc">${esc(cmt)}</span>` : '');
+}
+function renderYaml(d) {
+  const src = d.text.replace(/^﻿/, ''), lines = src.split(/\r?\n/);
+  art.innerHTML = '';
+  const bar = document.createElement('div'); bar.className = 'jbar';
+  bar.innerHTML = `<button class="plain" data-a="copy">${t('copy')}</button><span class="info"></span>`;
+  bar.querySelector('.info').textContent = t('yaml_info', lines.length);
+  bar.onclick = e => { if (e.target.closest('[data-a="copy"]')) navigator.clipboard.writeText(src).then(() => toast(t('copied'))); };
+  const used = {}, tops = [];
+  const html = lines.map(ln => {
+    if (/^\s*#/.test(ln)) return `<span class="yc">${esc(ln)}</span>`;
+    if (/^(---|\.\.\.)\s*$/.test(ln)) return `<span class="ym">${esc(ln)}</span>`;
+    let m = ln.match(/^(\s*)(-\s+)?("[^"]*"|'[^']*'|[^\s#'"\-][^:#]*?|-[^\s:#][^:#]*?)(\s*:)(?=\s|$)(.*)$/);
+    if (m) {
+      const row = esc(m[1]) + (m[2] ? `<span class="ym">${esc(m[2])}</span>` : '') + `<span class="jk">${esc(m[3])}</span>${esc(m[4])}` + hlYVal(m[5]);
+      if (!m[1] && !m[2]) { const id = 'y-' + slug(m[3].replace(/^["']|["']$/g, ''), used); tops.push([id, m[3]]); return `<span id="${id}">${row}</span>`; }
+      return row;
+    }
+    m = ln.match(/^(\s*)(-)(\s+|$)(.*)$/);
+    if (m) return esc(m[1]) + `<span class="ym">${m[2]}</span>` + m[3] + hlYVal(m[4]);
+    return esc(ln);
+  }).join('\n');
+  const pre = document.createElement('pre'); pre.className = 'jraw'; pre.innerHTML = html;
+  art.append(bar, pre);
+  buildToc(tops.slice(0, 500).map(([id, k]) => [document.getElementById(id), k, 2]), t('toc_nokeys'));
+}
+function renderTxt(d) {
+  art.innerHTML = '';
+  const div = document.createElement('div'); div.className = 'plaintxt'; div.textContent = d.text.replace(/^﻿/, '');
+  art.appendChild(div);
+  buildToc([], t('toc_txt'));
+}
+
+function renderBody(d) {
+  const k = kindOf(d), sample = d.text.slice(0, 20000);
+  body.classList.toggle('hangul', (sample.match(/[\uAC00-\uD7A3]/g) || []).length > (sample.match(/[\u3040-\u30FF\u4E00-\u9FFF]/g) || []).length);
+  if (k === 'json') return renderJson(d);
+  if (k === 'yaml') return renderYaml(d);
+  if (k === 'txt') return renderTxt(d);
+  art.innerHTML = marked.parse(stripFront(d.text), { gfm: true, breaks: false });
+  // 상대경로 이미지는 로컬 도우미를 통해, 상대경로 .md 링크는 뷰어 안에서 열기
+  art.querySelectorAll('img[src],a[href]').forEach(el => {
+    const isImg = el.tagName === 'IMG', attr = isImg ? 'src' : 'href', v = el.getAttribute(attr);
+    if (v.startsWith('#')) return;
+    const abs = /^[a-z][a-z0-9+.-]*:/i.test(v) ? null : d.dir ? resolvePath(d.dir, v) : null;
+    if (isImg) { if (abs) el.setAttribute('src', fileUrl(abs)); return; }
+    if (abs && DOC_EXT.test(abs)) { el.dataset.md = abs; el.setAttribute('href', '#'); return; }
+    if (abs) el.setAttribute('href', fileUrl(abs));
+    el.target = '_blank';
+  });
+  art.querySelectorAll('table').forEach(t => { const w = document.createElement('div'); w.className = 'tbl'; t.replaceWith(w); w.appendChild(t); });
+  art.querySelectorAll('pre').forEach(pre => {
+    const b = document.createElement('button'); b.className = 'copy'; b.textContent = t('copy');
+    b.onclick = () => navigator.clipboard.writeText((pre.querySelector('code') || pre).innerText.trimEnd()).then(() => { b.textContent = t('copied'); setTimeout(() => b.textContent = t('copy'), 1200); });
+    pre.appendChild(b);
+  });
+  const used = {}, items = [];
+  art.querySelectorAll('h1,h2,h3,h4').forEach(h => { h.id = slug(h.textContent, used); items.push([h, h.textContent, h.tagName[1]]); });
+  buildToc(items, t('toc_md'));
+}
+function renderHeader(d) {
+  $('ttl').textContent = d.name;
+  body.classList.toggle('codedoc', ['json', 'yaml'].includes(kindOf(d)));
+  $('sub').textContent = d.path || t(d.isNew ? 'sub_new' : 'sub_drop');
+  const st = $('status');
+  st.className = d.dirty ? 'dirty' : (d.path ? 'saved' : '');
+  st.textContent = d.dirty ? t('unsaved') : (d.path ? t('saved') : '');
+  document.title = (d.dirty ? '● ' : '') + d.name + ' · Duru';
+}
+function renderList() {
+  const q = $('filter').value.trim().toLowerCase();
+  const list = $('docs'); list.innerHTML = '';
+  $('count').textContent = docs.length ? docs.length : '';
+  body.classList.toggle('many', docs.length > 6);
+  if (!docs.length) { list.innerHTML = '<div class="none">' + t('list_empty') + '</div>'; return; }
+  docs.filter(d => !q || d.name.toLowerCase().includes(q)).forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'doc' + (d.key === active ? ' on' : '');
+    const sub = d.dir ? d.dir.split(/[\\/]/).pop() : d.isNew ? t('l_new') : t('l_drop');
+    el.innerHTML = (isJson(d)
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4c-2 0-2 1-2 3v2c0 1.5-1 2.5-2 3 1 .5 2 1.5 2 3v2c0 2 0 3 2 3M16 4c2 0 2 1 2 3v2c0 1.5 1 2.5 2 3-1 .5-2 1.5-2 3v2c0 2 0 3-2 3"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>')
+      + '<div class="tx"><div class="nm"></div><div class="sub"></div></div>'
+      + (kindOf(d) !== 'md' ? '<span class="ext">' + kindOf(d).toUpperCase() + '</span>' : '')
+      + (d.dirty ? '<span class="dot" title="' + t('unsaved').replace('● ', '') + '"></span>' : '')
+      + '<button class="x" title="' + t('remove_tip') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+    el.querySelector('.nm').textContent = d.name.replace(/\.(md|markdown|mdown)$/i, '');
+    el.querySelector('.sub').textContent = sub;
+    el.title = d.path || d.name;
+    el.onclick = e => {
+      if (e.target.closest('.x')) return removeDoc(d.key);
+      if (active !== d.key) { active = d.key; refresh(); }
+    };
+    list.appendChild(el);
+  });
+  const on = list.querySelector('.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+}
+function refresh() {
+  const d = cur() || docs[0];
+  active = d ? d.key : null;
+  ls.set('active', active);
+  body.classList.toggle('blank', !d);
+  renderList();
+  if (d) {
+    renderHeader(d); renderBody(d);
+    if (editing) editor.value = d.text;
+    scroller.scrollTop = scrollPos[d.key] || 0;
+    if (editing) editor.scrollTop = 0;
+  } else { setEditing(false); $('toc').innerHTML = ''; document.title = 'Duru'; }
+  updateTop();
+}
+
+/* ── 편집 ── */
+function setEditing(on) {
+  editing = on && !!cur();
+  body.classList.toggle('editing', editing);
+  $('editBtn').classList.toggle('on', editing);
+  $('editBtn').querySelector('span').textContent = editing ? t('view') : t('edit');
+  if (editing) { editor.value = cur().text; editor.focus(); }
+}
+let typeT;
+editor.addEventListener('input', () => {
+  const d = cur(); if (!d) return;
+  d.text = editor.value;
+  if (!d.dirty) { d.dirty = true; renderList(); }
+  renderHeader(d);
+  clearTimeout(typeT);
+  typeT = setTimeout(() => { renderBody(d); persist(d); }, 150);
+});
+editor.addEventListener('scroll', () => {   // 미리보기를 비율로 따라가게
+  const r = editor.scrollTop / Math.max(1, editor.scrollHeight - editor.clientHeight);
+  scroller.scrollTop = r * (scroller.scrollHeight - scroller.clientHeight);
+});
+function wrapSel(mark) {
+  const s = editor.selectionStart, e = editor.selectionEnd, v = editor.value;
+  editor.setRangeText(mark + v.slice(s, e) + mark, s, e, 'select');
+  editor.setSelectionRange(s + mark.length, e + mark.length);
+  editor.dispatchEvent(new Event('input'));
+}
+editor.addEventListener('keydown', e => {
+  if (e.key === 'Tab') { e.preventDefault(); editor.setRangeText('  ', editor.selectionStart, editor.selectionEnd, 'end'); editor.dispatchEvent(new Event('input')); }
+  if (e.ctrlKey && !e.shiftKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); wrapSel('**'); }
+  if (e.ctrlKey && !e.shiftKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); wrapSel('*'); }
+});
+
+/* ── 목차 현재 위치 + 스크롤 기억 + 맨 위로 ── */
+function spy() {
+  if (!heads.length) return;
+  const top = scroller.getBoundingClientRect().top + 90;
+  let c = heads[0];
+  for (const h of heads) { if (h[0].getBoundingClientRect().top <= top) c = h; else break; }
+  heads.forEach(h => h[1].classList.toggle('on', h === c));
+  const r = c[1].getBoundingClientRect(), tr = $('toc').getBoundingClientRect();
+  if (r.top < tr.top || r.bottom > tr.bottom) c[1].scrollIntoView({ block: 'nearest' });
+}
+const updateTop = () => $('toTop').classList.toggle('show', (editing ? editor.scrollTop : scroller.scrollTop) > 400);
+let saveT;
+scroller.addEventListener('scroll', () => {
+  requestAnimationFrame(spy); updateTop();
+  clearTimeout(saveT); saveT = setTimeout(() => { if (active) { scrollPos[active] = scroller.scrollTop; ls.set('scroll', scrollPos); } }, 300);
+});
+editor.addEventListener('scroll', updateTop);
+$('toTop').onclick = () => {
+  if (editing) editor.scrollTo({ top: 0, behavior: 'smooth' });
+  scroller.scrollTo({ top: 0, behavior: 'smooth' });
+};
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]'); if (!a) return;
+  e.preventDefault();
+  if (a.dataset.md) { api('push', { paths: [a.dataset.md] }).then(poll).catch(() => toast(t('cant_open'))); return; }
+  const id = decodeURIComponent(a.getAttribute('href').slice(1));
+  const el = document.getElementById(id) || document.getElementsByName(id)[0];
+  if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+});
+
+/* ── 버튼/단축키 ── */
+const pick = $('pick');
+pick.onchange = () => { addFiles([...pick.files]); pick.value = ''; };
+$('openBtn').onclick = $('emptyOpen').onclick = openFiles;
+$('newBtn').onclick = $('emptyNew').onclick = newDoc;
+$('editBtn').onclick = () => setEditing(!editing);
+$('aboutBtn').onclick = () => {
+  $('about').classList.add('show'); $('notices').textContent = t('loading');
+  fetch('notices.txt').then(r => r.text()).then(t => $('notices').textContent = t).catch(() => {});
+};
+$('aboutClose').onclick = () => $('about').classList.remove('show');
+$('about').onclick = e => { if (e.target.id === 'about') $('about').classList.remove('show'); };
+addEventListener('keydown', e => { if (e.key === 'Escape') $('about').classList.remove('show'); });
+$('saveBtn').onclick = () => save(false);
+$('filter').oninput = renderList;
+$('sideBtn').onclick = () => { prefs.side = !prefs.side; savePrefs(); applyPrefs(); };
+$('fsDown').onclick = () => { prefs.fs = Math.max(14, prefs.fs - 1); savePrefs(); applyPrefs(); toast(t('fs_toast', prefs.fs)); };
+$('fsUp').onclick = () => { prefs.fs = Math.min(24, prefs.fs + 1); savePrefs(); applyPrefs(); toast(t('fs_toast', prefs.fs)); };
+$('wideBtn').onclick = () => { prefs.wide = !prefs.wide; savePrefs(); applyPrefs(); };
+$('themeBtn').onclick = () => {
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const c = prefs.theme || (dark ? 'dark' : 'light');
+  prefs.theme = c === 'dark' ? 'light' : 'dark'; savePrefs(); applyPrefs();
+};
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (e.ctrlKey && k === 's') { e.preventDefault(); save(e.shiftKey); return; }
+  if (e.ctrlKey && k === 'o') { e.preventDefault(); openFiles(); return; }
+  if (e.ctrlKey && k === 'e') { e.preventDefault(); setEditing(!editing); return; }
+  if (e.ctrlKey || e.altKey || e.metaKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (k === 't') $('sideBtn').click();
+  if (k === 'd') $('themeBtn').click();
+});
+
+/* ── 드래그 앤 드롭 (여러 개) ── */
+let depth = 0;
+addEventListener('dragenter', e => { e.preventDefault(); depth++; body.classList.add('dragging'); });
+addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; body.classList.remove('dragging'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => {
+  e.preventDefault(); depth = 0; body.classList.remove('dragging');
+  addFiles([...e.dataTransfer.files]);
+});
+
+/* ── 시작 ── */
+LANG = pickLang(prefs.lang || SYS_LANG);
+$('langSel').innerHTML = Object.keys(I18N).map(c => `<option value="${c}">${I18N[c]._name}</option>`).join('');
+$('langSel').value = LANG;
+$('langSel').onchange = () => { prefs.lang = LANG = $('langSel').value; savePrefs(); applyI18n(); setEditing(editing); refresh(); };
+applyI18n(); setEditing(false);
+applyPrefs();
+DB.all().then(all => {
+  const saved = ls.get('docs', []);
+  docs = ((all && all.length) ? all : saved).sort((a, b) => a.added - b.added);
+  refresh();
+  poll(); setInterval(poll, 700); setInterval(watch, 2000);
+});
+</script>
+</body>
+</html>
