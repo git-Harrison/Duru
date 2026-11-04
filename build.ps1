@@ -5,16 +5,19 @@ $out = Join-Path $d 'out'; New-Item -ItemType Directory -Force $out | Out-Null
 $app = Join-Path $out 'Duru.exe'
 $refs = '/r:System.Windows.Forms.dll', '/r:System.Drawing.dll', '/r:Microsoft.CSharp.dll', '/r:System.Core.dll'
 
-& $csc /nologo /target:winexe /codepage:65001 /out:"$app" /win32icon:"$d\app.ico" `
-  /resource:"$d\viewer.html",viewer.html /resource:"$d\marked.min.js",marked.min.js `
-  /resource:"$d\PretendardVariable.woff2",PretendardVariable.woff2 /resource:"$d\icon.png",icon.png /resource:"$d\THIRD_PARTY_NOTICES.txt",notices.txt `
-  @refs /r:System.Web.Extensions.dll "$d\Duru.cs" "$d\Setup.cs" "$d\Lang.cs"
+# 인자를 문자열로 직접 만들어 넘긴다 (Windows PowerShell 5 와 PowerShell 7 이 따옴표를 다르게 처리하므로)
+$res = { param($file, $name) "/resource:$file,$name" }
+$appArgs = @('/nologo', '/target:winexe', '/codepage:65001', "/out:$app", "/win32icon:$d\app.ico",
+  (& $res "$d\viewer.html" 'viewer.html'), (& $res "$d\marked.min.js" 'marked.min.js'),
+  (& $res "$d\PretendardVariable.woff2" 'PretendardVariable.woff2'), (& $res "$d\icon.png" 'icon.png'),
+  (& $res "$d\THIRD_PARTY_NOTICES.txt" 'notices.txt')) + $refs + @('/r:System.Web.Extensions.dll', "$d\Duru.cs", "$d\Setup.cs", "$d\Lang.cs")
+& $csc @appArgs
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 $setup = Join-Path $out 'Duru-Setup.exe'
-& $csc /nologo /target:winexe /codepage:65001 /out:"$setup" /win32icon:"$d\app.ico" `
-  /resource:"$app",Duru.exe /resource:"$d\icon.png",icon.png `
-  @refs "$d\Installer.cs" "$d\Setup.cs" "$d\Lang.cs"
+$setupArgs = @('/nologo', '/target:winexe', '/codepage:65001', "/out:$setup", "/win32icon:$d\app.ico",
+  (& $res $app 'Duru.exe'), (& $res "$d\icon.png" 'icon.png')) + $refs + @("$d\Installer.cs", "$d\Setup.cs", "$d\Lang.cs")
+& $csc @setupArgs
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # 메신저(카톡 등)·메일은 exe 첨부를 막는 경우가 많아 zip 으로도 묶어 둔다 (라이선스 고지 포함)
