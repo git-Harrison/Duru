@@ -19,6 +19,9 @@ static class Setup
     static string LocalAppData { get { return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); } }
     public static string InstallDir { get { return Path.Combine(LocalAppData, @"Programs\Duru"); } }
     public static string InstalledExe { get { return Path.Combine(InstallDir, ExeName); } }
+    // 아이콘 파일을 따로 두고 바로가기·앱 목록이 이 파일을 가리키게 한다 → 경로가 바뀌어 Windows 가 예전 아이콘 캐시를 못 씀
+    public static string IconFile { get { return Path.Combine(InstallDir, "Duru.ico"); } }
+    static string IconOf(string exe) { return File.Exists(IconFile) ? IconFile : exe; }
     static string StartMenuLnk { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), AppName + ".lnk"); } }
     static string DesktopLnk { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), AppName + ".lnk"); } }
 
@@ -34,7 +37,7 @@ static class Setup
         RemoveLegacy();
         string open = "\"" + exe + "\" \"%1\"";
         Set(@"Software\Classes\" + ProgId, null, L.T("Duru document", "Duru 문서", "Duru ドキュメント", "Duru 文档", "Documento de Duru"));
-        Set(@"Software\Classes\" + ProgId + @"\DefaultIcon", null, "\"" + exe + "\",0");
+        Set(@"Software\Classes\" + ProgId + @"\DefaultIcon", null, "\"" + IconOf(exe) + "\",0");
         Set(@"Software\Classes\" + ProgId + @"\shell\open\command", null, open);
         foreach (var ext in Exts)
         {
@@ -54,7 +57,7 @@ static class Setup
         Set(@"Software\RegisteredApplications", AppName, RegKey + @"\Capabilities");
         // 설정 > 앱 > 설치된 앱 에 표시
         Set(UninstallKey, "DisplayName", AppName);
-        Set(UninstallKey, "DisplayIcon", "\"" + exe + "\",0");
+        Set(UninstallKey, "DisplayIcon", "\"" + IconOf(exe) + "\",0");
         Set(UninstallKey, "DisplayVersion", Version);
         Set(UninstallKey, "Publisher", "Duru");
         Set(UninstallKey, "InstallLocation", Path.GetDirectoryName(exe));
@@ -118,9 +121,20 @@ static class Setup
         dynamic s = ws.CreateShortcut(lnk);
         s.TargetPath = exe;
         s.WorkingDirectory = Path.GetDirectoryName(exe);
-        s.IconLocation = exe + ",0";
+        s.IconLocation = IconOf(exe) + ",0";
         s.Description = L.Tagline;
         s.Save();
+    }
+
+    // Windows 아이콘 캐시 새로 고침 (Windows 10/11)
+    static void RefreshIconCache()
+    {
+        try
+        {
+            var p = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "ie4uinit.exe"), "-show") { CreateNoWindow = true, UseShellExecute = false });
+            p.WaitForExit(5000);
+        }
+        catch { }
     }
 
     static void TryDelete(string f) { try { if (File.Exists(f)) File.Delete(f); } catch { } }

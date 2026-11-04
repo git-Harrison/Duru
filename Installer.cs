@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -59,6 +59,8 @@ static class Installer
         Directory.CreateDirectory(Setup.InstallDir);
         using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("Duru.exe"))
         using (var o = File.Create(exe)) s.CopyTo(o);
+        using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("app.ico"))
+        using (var o = File.Create(Setup.IconFile)) s.CopyTo(o);
         say(0.75f, L.T("Adding to menus…", "메뉴와 바로가기를 등록하는 중…", "メニューとショートカットを登録しています…", "正在添加到菜单…", "Añadiendo a los menús…"));
         Setup.Register(exe, desktop, makeDefault);
         say(1f, L.T("Finishing…", "마무리하는 중…", "仕上げています…", "即将完成…", "Terminando…"));
