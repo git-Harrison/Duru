@@ -48,4 +48,4 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME out/Duru-Setup.exe out/Duru-Setup.zip out/SHA256SUMS.txt --draft --title "Duru $($env:GITHUB_REF_NAME.TrimStart('v'))" --generate-notes
+        run: gh release create $env:GITHUB_REF_NAME out/Duru-Setup.exe out/Duru-Setup.zip out/Duru.exe out/SHA256SUMS.txt --draft --title "Duru $($env:GITHUB_REF_NAME.TrimStart('v'))" --generate-notes

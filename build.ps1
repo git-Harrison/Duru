@@ -30,7 +30,7 @@ $z = [IO.Compression.ZipFile]::Open($zip, 'Create', [Text.Encoding]::UTF8)
 $z.Dispose()
 
 # 다운로드 검증용 SHA-256
-Get-ChildItem $out -Include 'Duru-Setup.exe', 'Duru-Setup.zip' -Recurse | ForEach-Object {
+Get-ChildItem $out -Include 'Duru-Setup.exe', 'Duru-Setup.zip', 'Duru.exe' -Recurse | ForEach-Object {
   (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() + '  ' + $_.Name
 } | Set-Content (Join-Path $out 'SHA256SUMS.txt') -Encoding ascii
 exit 0

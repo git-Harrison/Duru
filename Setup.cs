@@ -9,7 +9,7 @@ static class Setup
 {
     public const string AppName = "Duru";
     public const string ExeName = "Duru.exe";
-    public const string Version = "2.2.2";
+    public const string Version = "2.2.3";
     public const string AppId = "GitHarrison.Duru";
     const string ProgId = "Duru.doc";
     const string RegKey = @"Software\Duru";
@@ -63,6 +63,7 @@ static class Setup
         Set(UninstallKey, "Publisher", "Duru");
         Set(UninstallKey, "InstallLocation", Path.GetDirectoryName(exe));
         Set(UninstallKey, "UninstallString", "\"" + exe + "\" --uninstall");
+        Set(UninstallKey, "QuietUninstallString", "\"" + exe + "\" --uninstall /S");
         Set(UninstallKey, "EstimatedSize", (int)(new FileInfo(exe).Length / 1024));
         Set(UninstallKey, "NoModify", 1);
         Set(UninstallKey, "NoRepair", 1);

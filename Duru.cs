@@ -46,7 +46,7 @@ static class Duru
     [STAThread]
     static void Main(string[] args)
     {
-        if (args.Length > 0 && args[0] == "--uninstall") { Uninstall(); return; }
+        if (args.Length > 0 && args[0] == "--uninstall") { Uninstall(Array.Exists(args, a => a == "/S" || a == "/silent" || a == "--silent")); return; }
         bool created;
         using (var mtx = new Mutex(true, @"Local\DuruServer", out created))
         {
@@ -59,10 +59,10 @@ static class Duru
         }
     }
 
-    // ── 제거 (설정 > 앱 에서 호출) ──
-    static void Uninstall()
+    // ── 제거 (설정 > 앱 에서 호출). silent: 패키지 관리자(winget·Scoop 등)가 확인 창 없이 지울 때 ──
+    static void Uninstall(bool silent)
     {
-        if (MessageBox.Show(L.T("Uninstall Duru?\n\nYour document files will not be deleted.", "Duru를 제거할까요?\n\n작성한 문서 파일은 지워지지 않아요.", "Duru をアンインストールしますか？\n\nドキュメントファイルは削除されません。", "要卸载 Duru 吗？\n\n你的文档文件不会被删除。", "¿Desinstalar Duru?\n\nTus archivos de documentos no se eliminarán."), L.T("Uninstall Duru", "Duru 제거", "Duru のアンインストール", "卸载 Duru", "Desinstalar Duru"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        if (!silent && MessageBox.Show(L.T("Uninstall Duru?\n\nYour document files will not be deleted.", "Duru를 제거할까요?\n\n작성한 문서 파일은 지워지지 않아요.", "Duru をアンインストールしますか？\n\nドキュメントファイルは削除されません。", "要卸载 Duru 吗？\n\n你的文档文件不会被删除。", "¿Desinstalar Duru?\n\nTus archivos de documentos no se eliminarán."), L.T("Uninstall Duru", "Duru 제거", "Duru のアンインストール", "卸载 Duru", "Desinstalar Duru"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
         string me = Assembly.GetExecutingAssembly().Location;
         IntPtr h = FindViewer();
         if (h != IntPtr.Zero) PostMessage(h, 0x0010, IntPtr.Zero, IntPtr.Zero);   // 열린 뷰어 창 닫기
@@ -76,7 +76,7 @@ static class Duru
         string dir = Path.GetDirectoryName(me);
         if (string.Equals(dir, Setup.InstallDir, StringComparison.OrdinalIgnoreCase))
             Process.Start(new ProcessStartInfo("cmd.exe", "/c ping -n 3 127.0.0.1 >nul & rmdir /s /q \"" + dir + "\"") { CreateNoWindow = true, UseShellExecute = false });
-        MessageBox.Show(L.T("Duru has been uninstalled.", "Duru를 제거했어요.", "Duru をアンインストールしました。", "Duru 已卸载。", "Duru se ha desinstalado."), "Duru");
+        if (!silent) MessageBox.Show(L.T("Duru has been uninstalled.", "Duru를 제거했어요.", "Duru をアンインストールしました。", "Duru 已卸载。", "Duru se ha desinstalado."), "Duru");
     }
     [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
 
